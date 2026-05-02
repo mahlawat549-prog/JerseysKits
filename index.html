@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jerseys Kit | Football & Cricket Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+        
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .glass-nav {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 50;
+        }
+
+        .jersey-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .jersey-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .active-tab {
+            background: #3b82f6 !important;
+            color: white !important;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+            border-color: #3b82f6 !important;
+        }
+
+        .sport-btn {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .sport-btn.active {
+            color: #3b82f6;
+            opacity: 1 !important;
+        }
+        .sport-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: #3b82f6;
+            border-radius: 50%;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        #toast {
+            visibility: hidden;
+            min-width: 220px;
+            background-color: #10b981; 
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 14px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: 700;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.4s, fadeout 0.4s 2.1s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+        .modal-active { opacity: 1 !important; pointer-events: auto !important; }
+        .modal-active > div:last-child { transform: scale(1) !important; }
+        
+        .club-heading {
+            position: relative;
+            padding-left: 1rem;
+            margin-bottom: 2rem;
+            margin-top: 4rem;
+            font-size: 1.75rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .club-heading::before {
+            content: '';
+            width: 6px;
+            height: 32px;
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        #discount-star {
+            position: fixed;
+            top: 80px; /* Moved up to avoid overlap */
+            right: 25px;
+            z-index: 100; /* Increased z-index significantly to be above nav */
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .star-container {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            position: relative;
+            animation: pulse-glow 2s infinite;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
+        }
+
+        .star-tooltip {
+            position: absolute;
+            right: 0;
+            top: 65px; /* Shifted tooltip below the star for better visibility */
+            background: #1e293b;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 12px 16px;
+            width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+        }
+
+        .star-container:hover .star-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20 md:pb-0 text-slate-200">
+
+    <div id="toast">Code copied!</div>
+
+    <!-- Floating Star Timer (Cricket Only) -->
+    <div id="discount-star" class="hidden">
+        <div class="star-container">
+            <i class="fas fa-star text-2xl"></i>
+            <div class="star-tooltip">
+                <p class="text-[10px] font-black uppercase text-blue-400 tracking-widest mb-1">IPL Launch Offer</p>
+                <p class="text-xs font-bold text-white mb-3">Flat ₹200 OFF on all Jerseys</p>
+                <div class="flex gap-2 items-center bg-slate-900/80 p-3 rounded-xl border border-white/5">
+                    <div class="text-center flex-1">
+                        <span id="cd-hours" class="block text-xl font-black leading-none text-white">72</span>
+                        <span class="text-[7px] text-slate-500 font-bold uppercase mt-1 block">Hrs</span>
+                    </div>
+                    <div class="text-blue-500/50 font-black mb-3">:</div>
+                    <div class="text-center flex-1">
+                        <span id="cd-minutes" class="block text-xl font-black leading-none text-white">00</span>
+                        <span class="text-[7px] text-slate-500 font-bold uppercase mt-1 block">Min</span>
+                    </div>
+                    <div class="text-blue-500/50 font-black mb-3">:</div>
+                    <div class="text-center flex-1">
+                        <span id="cd-seconds" class="block text-xl font-black leading-none text-blue-500">00</span>
+                        <span class="text-[7px] text-slate-500 font-bold uppercase mt-1 block">Sec</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="glass-nav sticky top-0">
+        <div class="px-4 py-3">
+            <div class="max-w-7xl mx-auto flex justify-between items-center text-white">
+                <div class="flex items-center gap-2 cursor-pointer active:scale-95 transition-transform duration-150" onclick="resetApp()">
+                    <div class="bg-blue-600 p-2 rounded-lg shadow-lg">
+                        <i id="logo-icon" class="fas fa-futbol text-white text-xl transition-all duration-300"></i>
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tighter uppercase hidden sm:block">JERSEYS<span class="text-blue-500 font-black">KIT</span></h1>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center bg-slate-800 border border-white/10 rounded-full px-4 py-1.5 focus-within:border-blue-500 transition-all w-32 sm:w-48">
+                        <i class="fas fa-search text-slate-400 text-sm"></i>
+                        <input type="text" id="search-input" oninput="handleSearch()" placeholder="Search..." class="bg-transparent border-none outline-none text-white text-sm w-full pl-2 placeholder-slate-500">
+                    </div>
+                    <div class="relative cursor-pointer transition-transform active:scale-90" onclick="toggleCart()">
+                        <i class="fas fa-shopping-bag text-xl text-white"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold shadow-lg">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sport Switch Bar -->
+        <div id="sport-selector-bar" class="border-t border-white/5 bg-slate-900/80 px-4 py-3">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex bg-slate-950 p-1 rounded-xl border border-white/10 w-full sm:w-auto justify-center">
+                    <button id="nav-football" onclick="switchSport('football')" class="sport-btn active flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all w-1/2 sm:w-auto">
+                        <i class="fas fa-futbol"></i> Football
+                    </button>
+                    <button id="nav-cricket" onclick="switchSport('cricket')" class="sport-btn opacity-40 flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all w-1/2 sm:w-auto">
+                        <i class="fas fa-baseball-ball"></i> Cricket
+                    </button>
+                </div>
+
+                <!-- Hidden when Cricket is active -->
+                <div id="sub-nav-links" class="flex gap-6 sm:gap-8 font-semibold overflow-x-auto hide-scrollbar w-full sm:w-auto justify-center px-2">
+                    <button onclick="resetApp()" class="hover:text-blue-400 transition-all text-xs uppercase tracking-widest whitespace-nowrap">Home</button>
+                    <button id="nav-primary-link" onclick="navigate('clubs')" class="hover:text-blue-400 transition-all text-xs uppercase tracking-widest whitespace-nowrap">Clubs</button>
+                    <button id="nav-secondary-link" onclick="navigate('nations')" class="hover:text-blue-400 transition-all text-xs uppercase tracking-widest whitespace-nowrap">Nations</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="league-nav" class="bg-slate-900 border-b border-white/5 py-3 hidden">
+        <div class="max-w-7xl mx-auto px-4">
+            <div id="league-scroll" class="flex gap-3 overflow-x-auto hide-scrollbar"></div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <div class="mb-10 text-white">
+            <h3 id="page-title" class="text-3xl font-black tracking-tight uppercase">Football Catalogue</h3>
+            <p id="page-desc" class="text-slate-500 mt-2 font-medium uppercase tracking-widest text-[10px]">Premium Quality Gear • Selection Updated Daily</p>
+        </div>
+
+        <div id="jersey-container" class="space-y-20"></div>
+    </main>
+
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full max-w-md bg-slate-950 shadow-2xl z-[120] transform translate-x-full transition-transform duration-300 border-l border-white/10 flex flex-col">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center text-white">
+            <h2 class="text-2xl font-black uppercase tracking-tighter">My <span class="text-blue-500">Bag</span></h2>
+            <button onclick="toggleCart()" class="text-slate-400 hover:text-white text-3xl">&times;</button>
+        </div>
+        
+        <div class="flex-grow overflow-y-auto flex flex-col">
+            <div id="cart-items" class="p-6 space-y-4 text-white flex-grow">
+                <p class="text-slate-500 text-center py-20 italic">Bag is empty</p>
+            </div>
+            
+            <div class="p-6 border-t border-white/5 bg-slate-900/30 mt-auto">
+                <h3 class="text-sm font-black uppercase text-blue-500 mb-4 tracking-widest">How To Order?</h3>
+                <div class="space-y-4">
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 rounded-full bg-blue-600/20 text-blue-500 flex items-center justify-center font-black flex-shrink-0 text-[10px]">1</div>
+                        <div>
+                            <p class="text-[11px] font-black uppercase tracking-widest text-white">Pick Your Jersey</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">Select your favourite jersey and size.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 rounded-full bg-blue-600/20 text-blue-500 flex items-center justify-center font-black flex-shrink-0 text-[10px]">2</div>
+                        <div>
+                            <p class="text-[11px] font-black uppercase tracking-widest text-white">Copy Order Codes</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">Click "Copy Order Codes" at the bottom.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-black flex-shrink-0 shadow-lg text-[10px]">3</div>
+                        <div>
+                            <p class="text-[11px] font-black uppercase tracking-widest text-white">Send It To Us</p>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">DM the copied code to us to place order!</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-6">
+                    <a href="https://www.instagram.com/jerseys.kit/" target="_blank" class="flex items-center justify-center gap-2 bg-[#e1306c] hover:opacity-90 py-2 rounded-lg transition-all active:scale-95 text-white">
+                        <i class="fab fa-instagram text-sm"></i>
+                        <span class="text-[9px] font-black uppercase tracking-widest">Instagram</span>
+                    </a>
+                    <a href="https://discord.gg/4tmXNa4uTM" target="_blank" class="flex items-center justify-center gap-2 bg-[#5865F2] hover:opacity-90 py-2 rounded-lg transition-all active:scale-95 text-white">
+                        <i class="fab fa-discord text-sm"></i>
+                        <span class="text-[9px] font-black uppercase tracking-widest">Discord</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="cart-footer" class="border-t border-white/10 p-6 hidden bg-slate-900/50 text-white">
+            <div class="flex justify-between items-center mb-6">
+                <span class="uppercase text-xs font-black text-slate-400">Total</span>
+                <span id="cart-total" class="text-2xl font-black">₹0</span>
+            </div>
+            <div class="bg-slate-900 rounded-xl p-4 border border-white/5 mb-6">
+                <p class="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-2">Order Summary:</p>
+                <div id="combined-codes" class="text-[10px] font-mono text-blue-400 break-words leading-relaxed"></div>
+            </div>
+            <button onclick="copyOrderCodes()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl transition-all active:scale-95 uppercase tracking-widest text-xs shadow-lg shadow-blue-500/20">
+                <i class="fas fa-copy mr-2"></i> Copy Order Codes
+            </button>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 z-[110] flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 p-4">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onclick="closeProductModal()"></div>
+        <div class="bg-slate-900 border border-white/10 rounded-3xl shadow-2xl relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden transform scale-95 transition-all duration-300 text-white" id="product-modal-content">
+        </div>
+    </div>
+
+    <script>
+        const footballJerseys = [
+            { id: 101, club: "Arsenal", code: "#ARSH1", name: "Arsenal Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/0KdytNvd/Arsenal-Home.png" },
+            { id: 102, club: "Arsenal", code: "#ARSH2", name: "Arsenal Home (Full Sleeves)", price: 649, league: "Premier League", category: "clubs", variant: "Home Edition", image: "https://i.postimg.cc/H84kSLmw/Arsenal-Home-Sleeves.png" },
+            { id: 103, club: "Arsenal", code: "#ARST1", name: "Arsenal Alternate Kit", price: 649, league: "Premier League", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/2LFSH5Y4/Arsenal-Alternate.png" },
+            { id: 104, club: "Manchester City", code: "#MCIH1", name: "Man City Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/ppRTmKQS/Manchester-City-Home.png" },
+            { id: 105, club: "Manchester City", code: "#MCIH2", name: "Man City Home (V2)", price: 649, league: "Premier League", category: "clubs", variant: "Home Edition", image: "https://i.postimg.cc/PPTxC1bR/Manchester-City-Home-2.png" },
+            { id: 106, club: "Manchester City", code: "#MCIA1", name: "Man City Away Kit", price: 649, league: "Premier League", category: "clubs", variant: "Away Kit", image: "https://i.postimg.cc/WhT3d0mf/Manchester-City-Away.png" },
+            { id: 107, club: "Manchester City", code: "#MCIT1", name: "Man City Alternate Kit", price: 649, league: "Premier League", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/1fst8D0T/Manchester-City-Alternate.png" },
+            { id: 1,   club: "Liverpool", code: "#LIVH1", name: "Liverpool Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/PPTxC1b2/Liverpool-Home.png" },
+            { id: 3,   club: "Liverpool", code: "#LIVA1", name: "Liverpool Away Kit", price: 649, league: "Premier League", category: "clubs", variant: "Away Kit", image: "https://i.postimg.cc/jLt5Dy6v/Liverpool-Away.png" },
+            { id: 108, club: "Liverpool", code: "#LIVA2", name: "Liverpool Away (V2)", price: 649, league: "Premier League", category: "clubs", variant: "Away Edition", image: "https://i.postimg.cc/zV8ByTwj/Liverpool-Away-2.png" },
+            { id: 109, club: "Liverpool", code: "#LIVT1", name: "Liverpool Alternate Kit", price: 649, league: "Premier League", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/JGMnsj35/Liverpool-Alternte.png" },
+            { id: 110, club: "Manchester United", code: "#MUNT1", name: "Man United Alternate", price: 649, league: "Premier League", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/ZC4RW6PG/Manchester-United-Alternate.png" },
+            { id: 111, club: "Manchester United", code: "#MUNPM1", name: "Man United Pre-Match Training", price: 649, league: "Premier League", category: "clubs", variant: "Pre-Match Training", image: "https://i.postimg.cc/rKMmD5CL/Manchester-United-Pre-Match-Training.png" },
+            { id: 112, club: "Chelsea", code: "#CHEH1", name: "Chelsea Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/hQbtCGgW/Chelsea-Home.png" },
+            { id: 113, club: "Newcastle United", code: "#NEWH1", name: "Newcastle Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/w7gv1DcH/New-Castle-Home.png" },
+            { id: 114, club: "Tottenham Hotspur", code: "#SPURH1", name: "Tottenham Home Kit", price: 649, league: "Premier League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/ppCdzyqH/Tottenham-Hotspur-Home.png" },
+            { id: 115, club: "Tottenham Hotspur", code: "#SPURA1", name: "Tottenham Away Kit", price: 649, league: "Premier League", category: "clubs", variant: "Away Kit", image: "https://i.postimg.cc/9rbfZzJj/Tottenham-Hotspur-Away.png" },
+            { id: 15,  club: "Barcelona", code: "#BARH1", name: "Barcelona Home Kit", price: 649, league: "La Liga", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/tnt4rgbS/Barcelona-Home.png" },
+            { id: 116, club: "Barcelona", code: "#BARH2", name: "Barcelona Home (V2)", price: 649, league: "La Liga", category: "clubs", variant: "Home Edition", image: "https://i.postimg.cc/LgB8ysSx/Barcelona-Home-2.png" },
+            { id: 117, club: "Barcelona", code: "#BARH3", name: "Barcelona Home (V3)", price: 649, league: "La Liga", category: "clubs", variant: "Home Edition", image: "https://i.postimg.cc/T5q3kPx0/Barcelona-Home-3.png" },
+            { id: 118, club: "Barcelona", code: "#BARCP1", name: "Barcelona X Coldplay Edition", price: 649, league: "La Liga", category: "clubs", variant: "Collab Edition", image: "https://i.postimg.cc/GTJmMpRg/Barcelona-X-Coldplay-2.png" },
+            { id: 119, club: "Barcelona", code: "#BARCPA1", name: "Barcelona X Coldplay Away", price: 649, league: "La Liga", category: "clubs", variant: "Collab Away", image: "https://i.postimg.cc/FkgHPKvB/Barcelona-X-Coldplay-Away.png" },
+            { id: 18,  club: "Real Madrid", code: "#RMDH1", name: "Real Madrid Home Kit", price: 649, league: "La Liga", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/nCpzXqYL/Real-Madrid-Home.png" },
+            { id: 120, club: "Real Madrid", code: "#RMDT1", name: "Real Madrid Alternate Kit", price: 649, league: "La Liga", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/Vdm6JXBL/Real-Madrid-Alternate.png" },
+            { id: 121, club: "AC Milan", code: "#ACMH1", name: "AC Milan Home Kit", price: 649, league: "Serie A", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/SYpK7MBr/AC-Milan-Home.png" },
+            { id: 122, club: "AC Milan", code: "#ACMA1", name: "AC Milan Away Kit", price: 649, league: "Serie A", category: "clubs", variant: "Away Kit", image: "https://i.postimg.cc/30HwCvs0/AC-Milan-Away.png" },
+            { id: 123, club: "AC Milan", code: "#ACMXP1", name: "AC Milan X Pleasures Edition", price: 649, league: "Serie A", category: "clubs", variant: "Collab Edition", image: "https://i.postimg.cc/CnVKHq3s/AC-Milan-X-Pleasures.png" },
+            { id: 124, club: "Inter Milan", code: "#IMIT1", name: "Inter Milan Alternate Kit", price: 649, league: "Serie A", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/pyDrVsjY/Inter-Milan-Alternate.png" },
+            { id: 125, club: "Juventus", code: "#JUVH1", name: "Juventus Home Kit", price: 649, league: "Serie A", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/K4njc0TH/Juventus-Home.png" },
+            { id: 126, club: "AS Roma", code: "#ROMT1", name: "AS Roma Alternate Kit", price: 649, league: "Serie A", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/JGxhZtPV/RS-Roma-Alternate.png" },
+            { id: 127, club: "Bayern Munich", code: "#BYMT1", name: "Bayern Munich Alternate", price: 649, league: "Bundesliga", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/QKkd6MDw/Bayern-Munich-Alternate.png" },
+            { id: 128, club: "Bayern Munich", code: "#BYMGK1", name: "Bayern Munich Goalkeeper", price: 649, league: "Bundesliga", category: "clubs", variant: "Goalkeeper Kit", image: "https://i.postimg.cc/V0Bk7Nw3/Bayern-Munich-Goal-Keeper.png" },
+            { id: 129, club: "Borussia Dortmund", code: "#BVBH1", name: "Dortmund Home Kit", price: 649, league: "Bundesliga", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/dZmVW0vK/Dortmund-Home.png" },
+            { id: 130, club: "PSG", code: "#PSGH1", name: "PSG Home Kit", price: 649, league: "Ligue 1", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/jLt5DyQs/PSG-Home.png" },
+            { id: 131, club: "Ajax", code: "#AJXT1", name: "Ajax Alternate Kit", price: 649, league: "Eredivisie", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/fShbj9GC/Ajax-Alternate.png" },
+            { id: 132, club: "Inter Miami", code: "#IMIAH1", name: "Inter Miami Home Kit", price: 649, league: "MLS", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/Yj102dF6/Inter-Miami-Home.png" },
+            { id: 133, club: "Inter Miami", code: "#IMIAT1", name: "Inter Miami Alternate Kit", price: 649, league: "MLS", category: "clubs", variant: "Alternate Kit", image: "https://i.postimg.cc/qg8qB1Kc/Inter-Miami-Alternate.png" },
+            { id: 134, club: "Al Nassr", code: "#ANSH1", name: "Al Nassr Home Kit", price: 649, league: "Saudi Pro League", category: "clubs", variant: "Home Kit", image: "https://i.postimg.cc/zH1fSgsS/Al-Nassar-Home.png" },
+            { id: 29,  club: "Argentina", code: "#ARGH1", name: "Argentina Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/0KdytNvm/Argentina-Home.png" },
+            { id: 135, club: "England", code: "#ENGH1", name: "England Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/JHczThm8/England-Home.png" },
+            { id: 136, club: "France", code: "#FRNH1", name: "France Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/wRcjWBHH/France-Home.png" },
+            { id: 137, club: "France", code: "#FRNA1", name: "France Away Kit", price: 649, league: "Nations", category: "nations", variant: "Away Kit", image: "https://i.postimg.cc/3WgNrtGR/France-Away.png" },
+            { id: 138, club: "Germany", code: "#GERH1", name: "Germany Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/z3nvDxhh/Germany-Home.png" },
+            { id: 139, club: "Germany", code: "#GERH2", name: "Germany Home (V2)", price: 649, league: "Nations", category: "nations", variant: "Home Edition", image: "https://i.postimg.cc/QVpCNf7T/Germany-Home(1).png" },
+            { id: 140, club: "Germany", code: "#GERA1", name: "Germany Away Kit", price: 649, league: "Nations", category: "nations", variant: "Away Kit", image: "https://i.postimg.cc/kDxGMTS2/Germany-Away.png" },
+            { id: 141, club: "Italy", code: "#ITYH1", name: "Italy Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/8shckZvw/Italy-Home.png" },
+            { id: 142, club: "Italy", code: "#ITYA1", name: "Italy Away Kit", price: 649, league: "Nations", category: "nations", variant: "Away Kit", image: "https://i.postimg.cc/G9kt3XDx/Italy-Away.png" },
+            { id: 143, club: "Japan", code: "#JAPH1", name: "Japan Home Kit", price: 649, league: "Nations", category: "nations", variant: "Home Kit", image: "https://i.postimg.cc/14pXRvFC/Japan-Home.png" },
+        ];
+
+        const cricketJerseys = [
+            { id: 3002, club: "KKR", code: "#KKR-RN", name: "KKR Round Neck", price:  549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/QxDpYJYr/kkr-round-neck.webp", sort: 1 },
+            { id: 3003, club: "KKR", code: "#KKR-VN", name: "KKR V-Neck", price:  549, league: "IPL", category: "clubs", variant: "V-Neck", image: "https://i.postimg.cc/pXvDcJcR/kkr-V-neck.webp", sort: 2 },
+            { id: 3001, club: "KKR", code: "#KKR-C1", name: "KKR Collar", price:  549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/7P03NWVB/kkr-collar.webp", sort: 3 },
+            { id: 3006, club: "KKR", code: "#KKR-SL", name: "KKR Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/QxDpYJYD/kkr-sleeveless.webp", sort: 4 },
+            { id: 3004, club: "KKR", code: "#KKR-FS", name: "KKR Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/HsmQv9vj/kkrfullsleeve.webp", sort: 5 },
+            { id: 3005, club: "KKR", code: "#KKR-JK", name: "KKR Training Jacket", price:  1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/rFTSZNZk/kkr-jacket.webp", sort: 6 },
+            { id: 2003, club: "RCB", code: "#RCB-BL1", name: "RCB V Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/0260wy4m/rcbbuttonless.webp", sort: 1 },
+            { id: 2002, club: "RCB", code: "#RCB-C2", name: "RCB Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/SNXfMxPY/rcb-(2).webp", sort: 3 },
+            { id: 2008, club: "RCB", code: "#RCB-SL1", name: "RCB Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/GhZJJ10x/rcbsleeveless-(1).webp", sort: 4 },
+            { id: 2005, club: "RCB", code: "#RCB-FS1", name: "RCB Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/3JyFvxqD/rcbfullsleeve-(1).webp", sort: 5 },
+            { id: 2007, club: "RCB", code: "#RCB-JK", name: "RCB Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/rFvCCL61/rcbjacket.webp", sort: 6 },
+            { id: 1003, club: "Mumbai Indians", code: "#MI-BL1", name: "MI Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/1RBtP05R/mibless-(1).webp", sort: 1 },
+            { id: 1001, club: "Mumbai Indians", code: "#MI-C1", name: "MI Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/d35tBFS8/mi-(1).webp", sort: 3 },
+            { id: 1009, club: "Mumbai Indians", code: "#MI-SL2", name: "MI Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/y6jdBhYd/misleeveless-(2).webp", sort: 4 },
+            { id: 1006, club: "Mumbai Indians", code: "#MI-FS2", name: "MI Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/BZp6s5QX/mifullsleeve-(2).webp", sort: 5 },
+            { id: 1007, club: "Mumbai Indians", code: "#MI-JK", name: "MI Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/Df6ZFQyy/mijacket.webp", sort: 6 },
+            { id: 703, club: "CSK", code: "#CSK-B1", name: "CSK Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/2yf4Dk03/cskbuttonless-(1).webp", sort: 1 },
+            { id: 701, club: "CSK", code: "#CSK-C1", name: "CSK Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/vBnWkgtd/csk-(1).webp", sort: 3 },
+            { id: 705, club: "CSK", code: "#CSK-EX1", name: "CSK Exclusive Edition", price: 899, league: "IPL", category: "clubs", variant: "Exclusive", image: "https://i.postimg.cc/HnCQgY6x/cskexlusive599.webp", sort: 3.5 },
+            { id: 710, club: "CSK", code: "#CSK-SL", name: "CSK Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/6qLC6kPY/csksleeveless-(1).webp", sort: 4 },
+            { id: 707, club: "CSK", code: "#CSK-FS1", name: "CSK Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/qqX2BPF3/cskfullsleeve-(1).webp", sort: 5 },
+            { id: 709, club: "CSK", code: "#CSK-JK", name: "CSK Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/D0d1f9NJ/cskjacket.webp", sort: 6 },
+            { id: 405, club: "Punjab Kings", code: "#PBKS-UN", name: "PBKS Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/k4b7S8xr/punjab-kings-u-neck.webp", sort: 1 },
+            { id: 406, club: "Punjab Kings", code: "#PBKS-VN", name: "PBKS V-Neck", price: 549, league: "IPL", category: "clubs", variant: "V-Neck", image: "https://i.postimg.cc/j2Yt45hG/punjab-kings-V-neck.webp", sort: 2 },
+            { id: 403, club: "Punjab Kings", code: "#PBKS-P", name: "PBKS Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/vBVGn95C/punjab-kings-polo.webp", sort: 3 },
+            { id: 404, club: "Punjab Kings", code: "#PBKS-SL", name: "PBKS Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/FRLhSc0B/punjab-kings-sleeveless.webp", sort: 4 },
+            { id: 401, club: "Punjab Kings", code: "#PBKS-FS", name: "PBKS Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/1tqyF6D0/punjab-kings-full-sleeve.webp", sort: 5 },
+            { id: 402, club: "Punjab Kings", code: "#PBKS-JK", name: "PBKS Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/fL9MdXYG/punjab-kings-jacket.webp", sort: 6 },
+            { id: 504, club: "LSG", code: "#LSG-RN", name: "LSG Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/tg5kDVkv/lsg-round-neck.webp", sort: 1 },
+            { id: 506, club: "LSG", code: "#LSG-VN", name: "LSG V-Neck", price: 549, league: "IPL", category: "clubs", variant: "V-Neck", image: "https://i.postimg.cc/VNRg4bg2/lsg-V-neck.webp", sort: 2 },
+            { id: 501, club: "LSG", code: "#LSG-C", name: "LSG Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/fbKC50Cv/lsg-collar.webp", sort: 3 },
+            { id: 505, club: "LSG", code: "#LSG-SL", name: "LSG Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/d0B6nT6x/lsg-sleeveless.webp", sort: 4 },
+            { id: 502, club: "LSG", code: "#LSG-FS", name: "LSG Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/HL2z37z6/lsg-full-sleeve.webp", sort: 5 },
+            { id: 503, club: "LSG", code: "#LSG-JK", name: "LSG Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/s2cmKZm6/lsg-jacket.webp", sort: 6 },
+            { id: 601, club: "Delhi Capitals", code: "#DC-RN", name: "DC Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/02zJBJkm/dc-round-neck.webp", sort: 1 },
+            { id: 606, club: "Delhi Capitals", code: "#DC-VN", name: "DC V-Neck", price: 549, league: "IPL", category: "clubs", variant: "V-Neck", image: "https://i.postimg.cc/X7tyS7qR/delhi-capitals-V-neck.webp", sort: 2 },
+            { id: 604, club: "Delhi Capitals", code: "#DC-P", name: "DC Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/pXmn6nW4/delhi-capitals-polo.webp", sort: 3 },
+            { id: 605, club: "Delhi Capitals", code: "#DC-SL", name: "DC Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/MKnjFj6s/delhi-capitals-sleeveless.webp", sort: 4 },
+            { id: 602, club: "Delhi Capitals", code: "#DC-FS", name: "DC Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/sDMZNZj6/delhi-capitals-ful-sleeve.webp", sort: 5 },
+            { id: 603, club: "Delhi Capitals", code: "#DC-JK", name: "DC Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/DySbMbvx/delhi-capitals-jacket.webp", sort: 6 },
+            { id: 804, club: "Gujarat Titans", code: "#GT-RN", name: "GT Round Neck", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/CxPMTccn/gujarat-titans-round-neck.webp", sort: 1 },
+            { id: 806, club: "Gujarat Titans", code: "#GT-VN", name: "GT V-Neck", price: 549, league: "IPL", category: "clubs", variant: "V-Neck", image: "https://i.postimg.cc/g2ScFggH/gujarat-titans-V-neck.webp", sort: 2 },
+            { id: 802, club: "Gujarat Titans", code: "#GT-C", name: "GT Collar", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/RZsC5ggh/gujarat-titans-collar.webp", sort: 3 },
+            { id: 805, club: "Gujarat Titans", code: "#GT-SL", name: "GT Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/MpPZ299X/gujarat-titans-sleeveless.webp", sort: 4 },
+            { id: 801, club: "Gujarat Titans", code: "#GT-FS", name: "GT Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/P5rfRgQN/gujarat-titals-ful-sleeve.webp", sort: 5 },
+            { id: 803, club: "Gujarat Titans", code: "#GT-JK", name: "GT Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/2ScjR006/gujarat-titans-jacket.webp", sort: 6 },
+            { id: 907, club: "Rajasthan Royals", code: "#RR-P2", name: "RR Collar", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/7PS28Jj0/rajasthan-royals-polo-(2).webp", sort: 3 },
+            { id: 904, club: "Rajasthan Royals", code: "#RR-SL1", name: "RR Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/x8GJKBLB/rajastan-royals-sleeveless-(1).webp", sort: 4 },
+            { id: 901, club: "Rajasthan Royals", code: "#RR-FS1", name: "RR Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/2yNLLCL2/rajastan-royals-full-sleve-(1).webp", sort: 5 },
+            { id: 903, club: "Rajasthan Royals", code: "#RR-JK", name: "RR Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/7h1GgjSR/rajastan-royals-jacket.webp", sort: 6 }
+        ];
+
+        let currentSport = 'football';
+        let cart = [];
+        let currentCategory = 'all';
+        let currentLeague = 'All';
+        let currentSearchQuery = '';
+        let currentViewedProduct = null;
+        let currentSelectedSize = null;
+        const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+
+        window.onload = () => { renderJerseys(); updateCart(); startCountdown(); };
+
+        function switchSport(sport) {
+            currentSport = sport;
+            document.getElementById('nav-football').classList.toggle('active', sport === 'football');
+            document.getElementById('nav-football').classList.toggle('opacity-40', sport !== 'football');
+            document.getElementById('nav-cricket').classList.toggle('active', sport === 'cricket');
+            document.getElementById('nav-cricket').classList.toggle('opacity-40', sport !== 'cricket');
+            document.getElementById('logo-icon').className = sport === 'football' ? 'fas fa-futbol text-white text-xl transition-all' : 'fas fa-baseball-ball text-white text-xl transition-all';
+            
+            const subNav = document.getElementById('sub-nav-links');
+            
+            if (sport === 'cricket') {
+                subNav.classList.add('hidden');
+                currentCategory = 'all';
+            } else {
+                subNav.classList.remove('hidden');
+            }
+            resetApp();
+        }
+
+        function resetApp() {
+            currentCategory = 'all';
+            currentLeague = 'All'; 
+            currentSearchQuery = '';
+            document.getElementById('search-input').value = '';
+            document.getElementById('league-nav').classList.add('hidden');
+            document.getElementById('page-title').innerText = currentSport === 'football' ? 'Football Catalogue' : 'IPL Catalogue';
+            renderJerseys();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigate(cat) {
+            if (currentSport === 'cricket') return;
+            currentCategory = cat; currentLeague = 'All';
+            const leagueNav = document.getElementById('league-nav');
+            const scroll = document.getElementById('league-scroll');
+            let leagues = [];
+            if (cat === 'clubs') leagues = ['All', 'Premier League', 'La Liga', 'Serie A', 'Bundesliga', 'Ligue 1', 'Eredivisie', 'MLS', 'Saudi Pro League'];
+            else if (cat === 'nations') leagues = ['All', 'Nations'];
+            if (leagues.length > 0) {
+                leagueNav.classList.remove('hidden');
+                scroll.innerHTML = leagues.map(l => `<button onclick="filterLeague('${l}')" class="league-btn px-5 py-2 rounded-full text-[10px] font-black bg-slate-800 hover:bg-slate-700 uppercase tracking-widest whitespace-nowrap transition-all ${currentLeague === l ? 'active-tab' : ''}">${l}</button>`).join('');
+            } else leagueNav.classList.add('hidden');
+            renderJerseys();
+        }
+
+        function filterLeague(league) {
+            currentLeague = league;
+            document.querySelectorAll('.league-btn').forEach(btn => btn.classList.toggle('active-tab', btn.innerText === league));
+            renderJerseys();
+        }
+
+        function handleSearch() { currentSearchQuery = document.getElementById('search-input').value; renderJerseys(); }
+
+        function renderJerseys() {
+            const container = document.getElementById('jersey-container');
+            const discountStar = document.getElementById('discount-star');
+            if (discountStar) discountStar.classList.toggle('hidden', currentSport !== 'cricket');
+            const dataSet = currentSport === 'football' ? footballJerseys : [...cricketJerseys].sort((a, b) => a.sort - b.sort);
+            let filtered = dataSet;
+            if (currentCategory !== 'all') filtered = filtered.filter(j => j.category === currentCategory);
+            if (currentSport === 'football' && currentLeague !== 'All') filtered = filtered.filter(j => j.league === currentLeague);
+            if (currentSearchQuery) {
+                const q = currentSearchQuery.toLowerCase();
+                filtered = filtered.filter(j => (j.name.toLowerCase().includes(q) || j.club.toLowerCase().includes(q)));
+            }
+            const groups = filtered.reduce((acc, item) => {
+                const key = item.club;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(item);
+                return acc;
+            }, {});
+            const clubList = Object.keys(groups);
+            if (clubList.length === 0) {
+                container.innerHTML = `<p class="text-center py-20 text-slate-500 uppercase text-[10px] tracking-widest font-black">No matching items found.</p>`;
+                return;
+            }
+            container.innerHTML = clubList.map(clubName => `
+                <div class="fade-in-up">
+                    <h2 class="club-heading">${clubName}</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+                        ${groups[clubName].map(j => `
+                            <div class="jersey-card group bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden cursor-pointer" onclick="openProductModal(${j.id})">
+                                <div class="aspect-[4/5] relative ${j.league === 'IPL' ? 'bg-white p-4' : 'bg-slate-800'} flex items-center justify-center overflow-hidden">
+                                    <img src="${j.image}" alt="${j.name}" class="w-full h-full ${j.league === 'IPL' ? 'object-contain' : 'object-cover'} transition-transform duration-500 group-hover:scale-110">
+                                </div>
+                                <div class="p-5 border-t border-white/5">
+                                    <h4 class="text-[9px] font-black uppercase text-blue-500 mb-1 tracking-widest">${j.variant}</h4>
+                                    <p class="text-xs font-black text-white truncate mb-2">${j.name}</p>
+                                    <div class="flex justify-between items-center">
+                                        ${j.league === 'IPL' 
+                                            ? `<div class="flex items-baseline gap-1.5"><p class="text-green-500 font-black text-sm">₹${j.price}</p><p class="text-red-500 font-bold text-[10px] line-through">₹${j.price + 200}</p></div>`
+                                            : `<p class="text-white font-black text-sm">₹${j.price}</p>`
+                                        }
+                                        <span class="text-[9px] font-mono text-slate-500">${j.code}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function openProductModal(id) {
+            const dataSet = [...footballJerseys, ...cricketJerseys];
+            currentViewedProduct = dataSet.find(j => j.id === id);
+            currentSelectedSize = null;
+            renderProductModal();
+            document.getElementById('product-modal').classList.add('modal-active');
+        }
+
+        function closeProductModal() { document.getElementById('product-modal').classList.remove('modal-active'); }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerHTML = message; toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2500);
+        }
+
+        function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('translate-x-full'); }
+
+        function renderProductModal() {
+            const item = currentViewedProduct; if(!item) return;
+            const container = document.getElementById('product-modal-content');
+            const cartItem = currentSelectedSize ? cart.find(c => c.cartId === `${item.id}-${currentSelectedSize}`) : null;
+            const quantity = cartItem ? cartItem.quantity : 0;
+            container.innerHTML = `
+                <div class="flex flex-col md:flex-row h-full max-h-[90vh]">
+                    <div class="w-full md:w-1/2 ${item.league === 'IPL' ? 'bg-white p-8' : 'bg-slate-950'} flex items-center justify-center relative overflow-hidden h-[350px] md:h-auto">
+                        <img src="${item.image}" class="w-full h-full ${item.league === 'IPL' ? 'object-contain' : 'object-cover'}">
+                    </div>
+                    <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center bg-slate-900">
+                        <div class="mb-auto">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h4 class="text-[10px] font-black uppercase text-blue-500 tracking-[0.2em] mb-1">${item.variant}</h4>
+                                    <h3 class="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">${item.name}</h3>
+                                </div>
+                                <button onclick="closeProductModal()" class="text-slate-500 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button>
+                            </div>
+                            ${item.league === 'IPL'
+                                ? `<div class="flex items-end gap-3 mb-8"><p class="text-3xl font-black text-green-500 leading-none">₹${item.price}</p><p class="text-lg font-bold text-red-500 line-through leading-none">₹${item.price + 200}</p></div>`
+                                : `<p class="text-2xl font-black text-white mb-8">₹${item.price}</p>`
+                            }
+                            <div class="mb-10">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select Your Size</p>
+                                <div class="flex flex-wrap gap-2">
+                                    ${availableSizes.map(size => `<button onclick="selectSize('${size}')" class="w-12 h-12 flex items-center justify-center rounded-xl border-2 font-black transition-all ${currentSelectedSize === size ? 'bg-blue-600 border-blue-600 text-white' : 'border-white/5 text-slate-400'}">${size}</button>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            ${quantity > 0 ? `<div class="flex items-center gap-4 bg-slate-800 rounded-2xl p-1"><button onclick="adjustQuantity(-1)" class="w-12 h-12 flex items-center justify-center bg-slate-700 rounded-xl text-white">-</button><div class="flex-grow text-center text-white font-black">${quantity}</div><button onclick="adjustQuantity(1)" class="w-12 h-12 flex items-center justify-center bg-blue-600 rounded-xl text-white">+</button></div>` 
+                            : `<button onclick="addToBag()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-xs">Add To Bag</button>`}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function selectSize(size) { currentSelectedSize = size; renderProductModal(); }
+        
+        function adjustQuantity(change, specificCartId = null) {
+            const cartId = specificCartId || `${currentViewedProduct.id}-${currentSelectedSize}`;
+            const existing = cart.find(c => c.cartId === cartId);
+            if (existing) {
+                existing.quantity += change;
+                if (existing.quantity <= 0) cart = cart.filter(c => c.cartId !== cartId);
+            }
+            updateCart(); if (currentViewedProduct) renderProductModal();
+        }
+
+        function addToBag() {
+            if (!currentSelectedSize) { showToast("Please select a size first"); return; }
+            const item = currentViewedProduct;
+            const cartId = `${item.id}-${currentSelectedSize}`;
+            const existing = cart.find(c => c.cartId === cartId);
+            if (existing) existing.quantity++;
+            else cart.push({ ...item, size: currentSelectedSize, quantity: 1, cartId });
+            updateCart(); renderProductModal(); showToast('Added to bag!');
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            const count = document.getElementById('cart-count');
+            const footer = document.getElementById('cart-footer');
+            const codesDiv = document.getElementById('combined-codes');
+            count.innerText = cart.reduce((s, i) => s + i.quantity, 0);
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-slate-600 text-center py-20 text-[10px] uppercase tracking-widest font-black">Your bag is empty</p>';
+                footer.classList.add('hidden');
+            } else {
+                footer.classList.remove('hidden');
+                container.innerHTML = cart.map(item => `
+                    <div class="flex items-center gap-4 bg-slate-900 border border-white/5 p-4 rounded-2xl">
+                        <div class="w-12 h-14 bg-slate-800 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                           <img src="${item.image}" class="w-full h-full object-contain">
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h5 class="text-[10px] font-black text-white uppercase truncate">${item.name}</h5>
+                            <p class="text-[9px] font-black text-blue-500 uppercase mt-1">Size: ${item.size}</p>
+                            <div class="flex items-center gap-3 mt-2">
+                                <button onclick="adjustQuantity(-1, '${item.cartId}')" class="w-6 h-6 text-white">-</button>
+                                <span class="text-xs font-black text-white">${item.quantity}</span>
+                                <button onclick="adjustQuantity(1, '${item.cartId}')" class="w-6 h-6 text-white">+</button>
+                            </div>
+                        </div>
+                    </div>`).join('');
+                totalEl.innerText = `₹${cart.reduce((s, i) => s + (i.price * i.quantity), 0)}`;
+                codesDiv.innerText = cart.map(i => `${i.code}-${i.size} (x${i.quantity})`).join(', ');
+            }
+        }
+
+        function copyOrderCodes() {
+            if (cart.length === 0) return;
+            const codes = cart.map(i => `${i.code}-${i.size} (x${i.quantity})`).join(', ');
+            const total = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const textToCopy = `ORDER:\n${codes}\nTotal: ₹${total}`;
+            const textArea = document.createElement("textarea"); 
+            textArea.value = textToCopy; document.body.appendChild(textArea); 
+            textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea);
+            showToast('Order code copied!');
+        }
+
+        function startCountdown() {
+            let target = localStorage.getItem('iplDiscountTimer');
+            if (!target) {
+                target = new Date().getTime() + (3 * 24 * 60 * 60 * 1000);
+                localStorage.setItem('iplDiscountTimer', target);
+            }
+            setInterval(() => {
+                const now = new Date().getTime();
+                const distance = target - now;
+                if (distance < 0) {
+                    document.getElementById('cd-hours').innerText = "00";
+                    document.getElementById('cd-minutes').innerText = "00";
+                    document.getElementById('cd-seconds').innerText = "00";
+                    return;
+                }
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('cd-hours').innerText = hours.toString().padStart(2, '0');
+                document.getElementById('cd-minutes').innerText = minutes.toString().padStart(2, '0');
+                document.getElementById('cd-seconds').innerText = seconds.toString().padStart(2, '0');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
