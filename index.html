@@ -122,9 +122,9 @@
 
         #discount-star {
             position: fixed;
-            top: 80px; /* Moved up to avoid overlap */
+            top: 80px; 
             right: 25px;
-            z-index: 100; /* Increased z-index significantly to be above nav */
+            z-index: 100;
             animation: float 3s ease-in-out infinite;
         }
 
@@ -147,7 +147,7 @@
         .star-tooltip {
             position: absolute;
             right: 0;
-            top: 65px; /* Shifted tooltip below the star for better visibility */
+            top: 65px;
             background: #1e293b;
             border: 1px solid rgba(59, 130, 246, 0.3);
             border-radius: 16px;
@@ -234,7 +234,6 @@
                     </button>
                 </div>
 
-                <!-- Hidden when Cricket is active -->
                 <div id="sub-nav-links" class="flex gap-6 sm:gap-8 font-semibold overflow-x-auto hide-scrollbar w-full sm:w-auto justify-center px-2">
                     <button onclick="resetApp()" class="hover:text-blue-400 transition-all text-xs uppercase tracking-widest whitespace-nowrap">Home</button>
                     <button id="nav-primary-link" onclick="navigate('clubs')" class="hover:text-blue-400 transition-all text-xs uppercase tracking-widest whitespace-nowrap">Clubs</button>
@@ -431,7 +430,13 @@
             { id: 907, club: "Rajasthan Royals", code: "#RR-P2", name: "RR Collar", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/7PS28Jj0/rajasthan-royals-polo-(2).webp", sort: 3 },
             { id: 904, club: "Rajasthan Royals", code: "#RR-SL1", name: "RR Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/x8GJKBLB/rajastan-royals-sleeveless-(1).webp", sort: 4 },
             { id: 901, club: "Rajasthan Royals", code: "#RR-FS1", name: "RR Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/2yNLLCL2/rajastan-royals-full-sleve-(1).webp", sort: 5 },
-            { id: 903, club: "Rajasthan Royals", code: "#RR-JK", name: "RR Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/7h1GgjSR/rajastan-royals-jacket.webp", sort: 6 }
+            { id: 903, club: "Rajasthan Royals", code: "#RR-JK", name: "RR Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/7h1GgjSR/rajastan-royals-jacket.webp", sort: 6 },
+            { id: 4001, club: "SRH", code: "#SRH-RN", name: "SRH Collar", price: 549, league: "IPL", category: "clubs", variant: "Round Neck", image: "https://i.postimg.cc/vmvNNmbT/srh-(1).webp", sort: 1 },
+
+            { id: 4003, club: "SRH", code: "#SRH-C", name: "SRH Zip", price: 549, league: "IPL", category: "clubs", variant: "Collar", image: "https://i.postimg.cc/7h4hn3yj/custom-orange-cricket-jersey-front-designsrhjersey-6e38be15-01d3-4a00-bbb9-4679aa6a492a-1200x.webp", sort: 2 },
+            { id: 4004, club: "SRH", code: "#SRH-SL", name: "SRH Sleeveless", price: 549, league: "IPL", category: "clubs", variant: "Sleeveless", image: "https://i.postimg.cc/DZyMkKwc/srhsleeveles.webp", sort: 3 },
+            { id: 4005, club: "SRH", code: "#SRH-FS", name: "SRH Full Sleeve", price: 649, league: "IPL", category: "clubs", variant: "Full Sleeves", image: "https://i.postimg.cc/QtxyGrdV/srhfullsleeve.webp", sort: 4 },
+            { id: 4006, club: "SRH", code: "#SRH-JK", name: "SRH Training Jacket", price: 1499, league: "IPL", category: "clubs", variant: "Jacket", image: "https://i.postimg.cc/KY5HHYxL/srhjacket.webp", sort: 5 }
         ];
 
         let currentSport = 'football';
